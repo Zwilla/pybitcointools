@@ -17,9 +17,9 @@ import json
 import random
 from typing import List, Dict, Any, Optional, Callable
 from .types import (ElectrumXBlockResponse, ElectrumXBlockHeadersResponse, BlockHeaderNotificationCallback,
-    ElectrumXBalanceResponse, ElectrumXHistoryResponse, ElectrumXMempoolResponse, ElectrumXUnspentResponse,
-    AddressNotificationCallback, ElectrumXGetTxResponse, ElectrumXMerkleResponse)
-
+                    ElectrumXBalanceResponse, ElectrumXHistoryResponse, ElectrumXMempoolResponse,
+                    ElectrumXUnspentResponse,
+                    AddressNotificationCallback, ElectrumXGetTxResponse, ElectrumXMerkleResponse)
 
 ca_path = certifi.where()
 
@@ -239,7 +239,8 @@ class ElectrumXClient:
         return False
 
     def _get_eligible_servers(self) -> Dict[str, Any]:
-        return {k: v for k, v in self._servers.items() if k not in self._failed_servers and self._port_key in v.keys() and
+        return {k: v for k, v in self._servers.items() if
+                k not in self._failed_servers and self._port_key in v.keys() and
                 (self._tor and k.endswith('onion') or (not self._tor and not k.endswith('onion')))}
 
     def _choose_new_server(self) -> str:
@@ -528,7 +529,7 @@ class ElectrumXClient:
 
     async def get_merkle(self, tx_hash: str, height: int) -> Optional[ElectrumXMerkleResponse]:
         if height <= 0:
-            return None     # Transaction not in blockchain yet
+            return None  # Transaction not in blockchain yet
         try:
             return await self.send_request("blockchain.transaction.get_merkle", tx_hash, height)
         except aiorpcx.jsonrpc.RPCError as e:

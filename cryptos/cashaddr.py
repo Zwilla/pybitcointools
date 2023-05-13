@@ -21,6 +21,7 @@
 
 _CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 
+
 def _polymod(values):
     """Internal function that computes the cashaddr checksum."""
     c = 1
@@ -37,8 +38,9 @@ def _polymod(values):
             c ^= 0xae2eabe2a8
         if (c0 & 0x10):
             c ^= 0x1e4f43e470
-    retval= c ^ 1
+    retval = c ^ 1
     return retval
+
 
 def _prefix_expand(prefix):
     """Expand the prefix into values for checksum computation."""
@@ -47,12 +49,14 @@ def _prefix_expand(prefix):
     retval.append(0)
     return retval
 
+
 def _create_checksum(prefix, data):
     """Compute the checksum values given prefix and data."""
     values = _prefix_expand(prefix) + data + bytes(8)
     polymod = _polymod(values)
     # Return the polymod expanded into eight 5-bit elements
     return bytes((polymod >> 5 * (7 - i)) & 31 for i in range(8))
+
 
 def _convertbits(data, frombits, tobits, pad=True):
     """General power-of-2 base conversion."""
@@ -62,7 +66,7 @@ def _convertbits(data, frombits, tobits, pad=True):
     maxv = (1 << tobits) - 1
     max_acc = (1 << (frombits + tobits - 1)) - 1
     for value in data:
-        acc = ((acc << frombits) | value ) & max_acc
+        acc = ((acc << frombits) | value) & max_acc
         bits += frombits
         while bits >= tobits:
             bits -= tobits
@@ -72,6 +76,7 @@ def _convertbits(data, frombits, tobits, pad=True):
         ret.append((acc << (tobits - bits)) & maxv)
 
     return ret
+
 
 def _pack_addr_data(kind, addr_hash):
     """Pack addr data with version byte"""
@@ -119,13 +124,11 @@ def _decode_payload(addr):
     if not all(33 <= ord(x) <= 126 for x in prefix):
         raise ValueError('invalid address prefix: {}'.format(prefix))
     if not (8 <= len(payload) <= 124):
-        raise ValueError('address payload has invalid length: {}'
-                         .format(len(addr)))
+        raise ValueError('address payload has invalid length: {}'.format(len(addr)))
     try:
         data = bytes(_CHARSET.find(x) for x in payload)
     except ValueError:
-        raise ValueError('invalid characters in address: {}'
-                            .format(payload))
+        raise ValueError('invalid characters in address: {}'.format(payload))
 
     if _polymod(_prefix_expand(prefix) + data):
         raise ValueError('invalid checksum in address: {}'.format(addr))
@@ -136,12 +139,14 @@ def _decode_payload(addr):
     # Drop the 40 bit checksum
     return prefix, data[:-8]
 
+
 #
 # External Interface
 #
 
 PUBKEY_TYPE = 0
 SCRIPT_TYPE = 1
+
 
 def decode(address):
     '''Given a cashaddr address, return a triple

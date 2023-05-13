@@ -3,7 +3,7 @@ import requests
 import datetime
 from .utils import parse_addr_args
 
-#Base module for all insight-based explorers
+# Base module for all insight-based explorers
 
 sendtx_url = "%s/tx/send"
 address_url = "%s/addrs/%s/txs"
@@ -13,8 +13,8 @@ current_block_height_url = "%s/status?q=getInfo"
 block_hash_by_height_url = "%s/block-index/%s"
 block_info_url = "%s/block/%s"
 
-def unspent(base_url, *args):
 
+def unspent(base_url, *args):
     addrs = parse_addr_args(*args)
 
     if len(addrs) == 0:
@@ -37,16 +37,19 @@ def unspent(base_url, *args):
             }
     return txs
 
+
 def fetchtx(base_url, txhash):
     url = fetchtx_url % (base_url, txhash)
     response = requests.get(url)
     return response.json()
+
 
 def txinputs(base_url, txhash):
     result = fetchtx(base_url, txhash)
     inputs = result['vin']
     unspents = [{'output': "%s:%s" % (i['txid'], i['vout']), 'value': i['valueSat']} for i in inputs]
     return unspents
+
 
 def pushtx(base_url, network, tx):
     if not re.match('^[0-9a-fA-F]*$', tx):
@@ -60,9 +63,10 @@ def pushtx(base_url, network, tx):
                 'data': {
                     'txid': result['txid'],
                     'network': network
-                    }
+                }
                 }
     return response
+
 
 # Gets the transaction output history of a given set of address_derivations,
 # including whether or not they have been spent
@@ -79,9 +83,11 @@ def history(base_url, *args):
     response = requests.get(url)
     return response.json()
 
+
 def block_height(base_url, txhash):
     tx = fetchtx(base_url, txhash)
     return tx.get('blockheight', None) or tx.get('height', None)
+
 
 def block_info(base_url, height):
     url = block_hash_by_height_url % (base_url, height)

@@ -9,9 +9,9 @@ async def print_block_bits(start: int, end: int, coin_symbol: str, testnet: bool
         for i in range(start, end):
             block = await c.block_header(i)
             bits = block['bits']
-            text = f'Block {i}: {bits}'
+            text = 'Block {}: {}'.format(i, bits)
             if bits != 486604799:
-                text = f'\033[1;3m{text}\033[0m'
+                text = '\033[1;3m{}\033[0m'.format(text)
             print(text)
     finally:
         await c.close()

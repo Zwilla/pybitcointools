@@ -22,18 +22,18 @@ def main():
     output_format = args.output_format
     encoded_priv_key = coin.encode_privkey(priv, output_format, script_type=script_type)
     output_format_str = output_format.replace("_", " ")
-    print(f'Private key {output_format_str} format: {encoded_priv_key}')
+    print('Private key {} format: {}'.format(output_format_str, encoded_priv_key))
     public_key = privtopub(encoded_priv_key)
-    print(f'Public key: {public_key}')
+    print('Public key: {}'.format(public_key))
     if script_type == "p2pkh":
         address = coin.pubtoaddr(public_key)
-        print(f'P2PKH Address: {address}')
+        print('P2PKH Address: {}'.format(address))
     elif script_type == "p2wpkh" and coin.segwit_supported:
         native_segwit_address = coin.pub_to_segwit_address(public_key)
-        print(f'P2WPKH Native Segwit address: {native_segwit_address}')
+        print('P2WPKH Native Segwit address: {}'.format(native_segwit_address))
     elif script_type == "p2wpkh-p2sh" and coin.segwit_supported:
         p2pkhw_p2sh = coin.pubtop2wpkh_p2sh(public_key)
-        print(f'P2PKHW_P2SH Address: {p2pkhw_p2sh}')
+        print('P2PKHW_P2SH Address: {}'.format(p2pkhw_p2sh))
 
 
 if __name__ == "__main__":

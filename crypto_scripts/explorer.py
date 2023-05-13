@@ -44,12 +44,10 @@ def script_pubkey_is_pubkey(scriptPubKey: Dict[str, Any], pubkey: str) -> bool:
 def output_belongs_to_address(coin: BaseCoin, out: Dict[str, Any], address: str) -> bool:
     address_variations = coin.get_address_variations(address)
     scriptPubKey = out['scriptPubKey']
-    return any(
-        scriptPubKey.get('address') == address or script_pubkey_is_pubkey(scriptPubKey,
-                                                                          address) or address in scriptPubKey.get(
-            'addresses', [])
-        for address in address_variations
-    )
+    return any(scriptPubKey.get('address') == address
+               or script_pubkey_is_pubkey(scriptPubKey,address)
+               or address
+               in scriptPubKey.get('addresses', []) for address in address_variations)
 
 
 def script_sig_pubkey(scriptSig: str) -> Optional[str]:

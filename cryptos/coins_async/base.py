@@ -144,9 +144,9 @@ class BaseCoin:
         for inp in txobj['ins']:
             address = inp.get('address')
             if address and self.is_native_segwit(address):
-                pass        # Segwit signatures not included in tx size for fee purposes?
+                pass  # Segwit signatures not included in tx size for fee purposes?
             elif address and self.maybe_legacy_segwit(address):
-                size += self.signature_sizes['p2w_p2sh']    # Not sure if segwit or not
+                size += self.signature_sizes['p2w_p2sh']  # Not sure if segwit or not
             else:
                 size += self.signature_sizes['p2pkh']
         return size
@@ -428,7 +428,7 @@ class BaseCoin:
         return txs
 
     async def get_histories(self, *args: str, merkle_proof: bool = False) -> AsyncGenerator[
-                           ElectrumXMultiTxResponse, None]:
+        ElectrumXMultiTxResponse, None]:
         async for addr, result in self._tasks_with_inputs(self.history, *args, merkle_proof=merkle_proof):
             for tx in result:
                 tx['address'] = addr
@@ -567,7 +567,7 @@ class BaseCoin:
         except Exception:
             return False
 
-    def is_cash_or_legacy_p2pkh_address(self, addr: str)-> bool:
+    def is_cash_or_legacy_p2pkh_address(self, addr: str) -> bool:
         return self.is_p2pkh(addr) or self.is_cash_address(addr)
 
     def is_p2sh(self, addr: str) -> bool:
@@ -590,7 +590,8 @@ class BaseCoin:
         """
         Check if addr is a valid address for this chain
         """
-        return self.is_p2pkh(addr) or self.is_p2sh(addr) or self.is_native_segwit(addr) or self.is_cash_address(addr) or is_public_key(addr)
+        return self.is_p2pkh(addr) or self.is_p2sh(addr) or self.is_native_segwit(addr) or self.is_cash_address(
+            addr) or is_public_key(addr)
 
     def maybe_legacy_segwit(self, addr: str) -> bool:
         if self.segwit_supported:
@@ -825,8 +826,8 @@ class BaseCoin:
                 if segwit:
                     pub = compress(pub)
                 elif len(address) in [66, 130]:
-                   pub = address
-                   p2pk = True
+                    pub = address
+                    p2pk = True
         except (IndexError, KeyError):
             pass
         if segwit:
@@ -964,7 +965,7 @@ class BaseCoin:
         if fee is None:
             fee = max(await self.estimate_fee(txobj, numblocks=estimate_fee_blocks), self.minimum_fee)
         if isum < osum + fee:
-            raise Exception(f"Not enough money. You have {isum} but need {osum+fee} ({osum} + fee of {fee}).")
+            raise Exception(f"Not enough money. You have {isum} but need {osum + fee} ({osum} + fee of {fee}).")
 
         if change_out['value'] > fee:
             change_out['value'] = isum - osum - fee
@@ -999,7 +1000,8 @@ class BaseCoin:
                                          change_addr=change_addr)
 
     async def preparesignedmultirecipienttx(self, privkey: PrivateKeySignAllType, frm: str, outs: List[TxOut],
-                                            change_addr: str = None, fee: int = None, estimate_fee_blocks: int = 6) -> Tx:
+                                            change_addr: str = None, fee: int = None,
+                                            estimate_fee_blocks: int = 6) -> Tx:
         """
         Prepare transaction with multiple outputs, with change sent back to from address or given change_addr
         Requires private key, address:value pairs and optionally the change address and fee

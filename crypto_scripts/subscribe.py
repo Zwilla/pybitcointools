@@ -41,10 +41,16 @@ async def on_new_block(start_block: Tuple[Union[int, str, BlockHeader]], address
     await asyncio.wait([asyncio.create_task(print_balances(coin, addr)) for addr in addresses])
 
 
-async def on_address_change(coin: BaseCoin, address: str, new_txs: List[ElectrumXTx], newly_confirmed: List[ElectrumXTx],
-                            history: List[ElectrumXTx], unspent: List[ElectrumXTx],
-                            confirmed_balance: int, unconfirmed_balance: int, proven: int) -> None:
-    balances = f'Confirmed: {confirmed_balance} Unconfirmed: {unconfirmed_balance} Proven Balance: {proven}'
+async def on_address_change(coin: BaseCoin,
+                            address: str,
+                            new_txs: List[ElectrumXTx],
+                            newly_confirmed: List[ElectrumXTx],
+                            history: List[ElectrumXTx],
+                            unspent: List[ElectrumXTx],
+                            confirmed_balance: int,
+                            unconfirmed_balance: int,
+                            proven: int) -> None:
+    balances = 'Confirmed: {} Unconfirmed: {} Proven Balance: {}'.format(confirmed_balance, unconfirmed_balance, proven)
     if new_txs or newly_confirmed:
         logger.info("%s - Changed: %s", address, balances)
     else:

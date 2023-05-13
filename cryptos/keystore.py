@@ -32,11 +32,10 @@ from .deterministic import *
 from .main import *
 
 
-
 class KeyStore(object):
 
     def __init__(self, coin, addresses=()):
-        self.coin=coin
+        self.coin = coin
         self.addresses = list(addresses)
         self.root_derivation = None
         self.bip39_prefixes = ()
@@ -57,7 +56,7 @@ class KeyStore(object):
         self.electrum = electrum
         self.bip39_prefixes = (encode(self.coin.electrum_xprv_headers[xtype], 256, 4),
                                encode(self.coin.electrum_xpub_headers[xtype], 256, 4)) if electrum else (
-        encode(self.coin.xprv_headers[xtype], 256, 4), encode(self.coin.xpub_headers[xtype], 256, 4))
+            encode(self.coin.xprv_headers[xtype], 256, 4), encode(self.coin.xpub_headers[xtype], 256, 4))
 
     def get_tx_derivations(self, tx):
         keypairs = {}
@@ -84,7 +83,6 @@ class KeyStore(object):
         if self.is_watching_only():
             return False
         return bool(self.get_tx_derivations(tx))
-
 
 
 class Software_KeyStore(KeyStore):
@@ -178,7 +176,6 @@ class Imported_KeyStore(Software_KeyStore):
             b = pw_decode(v, old_password)
             c = pw_encode(b, new_password)
             self.keypairs[k] = c
-
 
 
 class Deterministic_KeyStore(Software_KeyStore):
@@ -299,7 +296,7 @@ class BIP32_KeyStore(Deterministic_KeyStore, Xpub):
         if bip32_deserialize(xprv, self.bip39_prefixes)[4] != bip32_deserialize(self.xpub, self.bip39_prefixes)[4]:
             raise InvalidPassword()
 
-    def update_password(self, old_password, new_password,):
+    def update_password(self, old_password, new_password, ):
         self.check_password(old_password)
         if new_password == '':
             new_password = None
@@ -343,7 +340,7 @@ class Hardware_KeyStore(KeyStore, Xpub):
     #   - DEVICE_IDS
     #   - wallet_type
 
-    #restore_wallet_class = BIP32_RD_Wallet
+    # restore_wallet_class = BIP32_RD_Wallet
     max_change_outputs = 1
 
     def __init__(self, d, coin):
@@ -371,8 +368,8 @@ class Hardware_KeyStore(KeyStore, Xpub):
             'type': 'hardware',
             'hw_type': self.hw_type,
             'xpub': self.xpub,
-            'derivation':self.derivation,
-            'label':self.label,
+            'derivation': self.derivation,
+            'label': self.label,
         }
 
     def unpaired(self):
@@ -397,17 +394,19 @@ class Hardware_KeyStore(KeyStore, Xpub):
     def can_change_password(self):
         return False
 
+
 def bip39_to_seed(mnemonic, passphrase):
     return mnemonic_to_seed(mnemonic, passphrase)
 
+
 # returns tuple (is_checksum_valid, is_wordlist_valid)
 def bip39_is_checksum_valid(mnemonic):
-    words = [ normalize('NFKD', word) for word in mnemonic.split()]
+    words = [normalize('NFKD', word) for word in mnemonic.split()]
     words_len = len(words)
     wordlist = wordlist_english
     n = len(wordlist)
-    checksum_length = 11*words_len//33
-    entropy_length = 32*checksum_length
+    checksum_length = 11 * words_len // 33
+    entropy_length = 32 * checksum_length
     i = 0
     words.reverse()
     while words:
@@ -416,18 +415,19 @@ def bip39_is_checksum_valid(mnemonic):
             k = wordlist.index(w)
         except ValueError:
             return False, False
-        i = i*n + k
+        i = i * n + k
     if words_len not in [12, 15, 18, 21, 24]:
         return False, True
     entropy = i >> checksum_length
-    checksum = i % 2**checksum_length
+    checksum = i % 2 ** checksum_length
     h = '{:x}'.format(entropy)
-    while len(h) < entropy_length/4:
-        h = '0'+h
+    while len(h) < entropy_length / 4:
+        h = '0' + h
     b = bytearray.fromhex(h)
     hashed = int(hfu(hashlib.sha256(b).digest()), 16)
     calculated_checksum = hashed >> (256 - checksum_length)
     return checksum == calculated_checksum, True
+
 
 def from_bip39_seed(seed, passphrase, derivation, coin):
     k = BIP32_KeyStore({}, coin)
@@ -436,13 +436,16 @@ def from_bip39_seed(seed, passphrase, derivation, coin):
     k.add_xprv_from_seed(bip32_seed, xtype, derivation)
     return k
 
+
 def standard_from_bip39_seed(seed, passphrase, coin):
     derivation = "m/44'/%s'/0'" % coin.hd_path
     return from_bip39_seed(seed, passphrase, derivation, coin)
 
+
 def p2wpkh_from_bip39_seed(seed, passphrase, coin):
     derivation = "m/84'/%s'/0'" % coin.hd_path
     return from_bip39_seed(seed, passphrase, derivation, coin)
+
 
 def p2wpkh_p2sh_from_bip39_seed(seed, passphrase, coin):
     derivation = "m/49'/%s'/0'" % coin.hd_path
@@ -484,14 +487,18 @@ def xpubkey_to_address(x_pubkey, coin):
     address = coin.pubtoaddr(pubkey)
     return pubkey, address
 
+
 def xpubkey_to_pubkey(x_pubkey, coin):
     pubkey, address = xpubkey_to_address(x_pubkey, coin)
     return pubkey
 
+
 hw_keystores = {}
+
 
 def register_keystore(hw_type, constructor):
     hw_keystores[hw_type] = constructor
+
 
 def hardware_keystore(d):
     hw_type = d['hw_type']
@@ -499,6 +506,7 @@ def hardware_keystore(d):
         constructor = hw_keystores[hw_type]
         return constructor(d)
     raise BaseException('unknown hardware type', hw_type)
+
 
 def is_address_list(text, coin):
     parts = text.split()
@@ -512,8 +520,15 @@ def get_private_keys(privkeys):
         privkeys = list(filter(bool, privkeys))
     return privkeys
 
+
 def is_private_key_list(text):
     return bool(get_private_keys(text))
+
+
+# def f(x): return 2*x
+def is_mpk(x):
+    return is_xpub(x)
+
 
 is_mpk = lambda x: is_xpub(x)
 is_private = lambda x: is_seed(x) or is_xprv(x) or is_private_key_list(x)
@@ -540,6 +555,7 @@ def from_electrum_seed(seed, passphrase, is_p2sh, coin):
         raise BaseException(t)
     return keystore
 
+
 def from_private_key_list(privkeys, coin, xtype="p2pkh", password=None):
     keystore = Imported_KeyStore({}, coin)
     keystore.set_xtype(xtype)
@@ -547,10 +563,12 @@ def from_private_key_list(privkeys, coin, xtype="p2pkh", password=None):
         keystore.import_privkey(priv, password=password)
     return keystore
 
+
 def from_xpub(xpub, coin, xtype, electrum=False):
     k = BIP32_KeyStore({}, coin)
     k.add_xpub(xpub, xtype, electrum=electrum)
     return k
+
 
 def from_xprv(xprv, coin):
     xpub = bip32_privtopub(xprv, coin.bip39_prefixes)
@@ -558,6 +576,7 @@ def from_xprv(xprv, coin):
     k.xprv = xprv
     k.xpub = xpub
     return k
+
 
 def from_master_key(text, coin):
     prefixes = coin.bip39_prefixes

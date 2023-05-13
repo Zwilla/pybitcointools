@@ -1,9 +1,9 @@
 import re
-#from blockcypher import api
+# from blockcypher import api
 from .utils import parse_addr_args
 
-def unspent(*addrs, coin_symbol=None, api_key=None, **kwargs):
 
+def unspent(*addrs, coin_symbol=None, api_key=None, **kwargs):
     if len(addrs) == 0:
         return []
 
@@ -14,13 +14,16 @@ def unspent(*addrs, coin_symbol=None, api_key=None, **kwargs):
         for tx in txs:
             tx['output'] = "%s:%s" % (tx['tx_hash'], tx['tx_output_n'])
         return txs
-    result = api.get_addresses_details(addrs, coin_symbol=coin_symbol, api_key=None, unspent_only=True, **kwargs)['txrefs']
+    result = api.get_addresses_details(addrs, coin_symbol=coin_symbol, api_key=None, unspent_only=True, **kwargs)[
+        'txrefs']
     return result
+
 
 def pushtx(tx, coin_symbol=None, api_key=None):
     if not re.match('^[0-9a-fA-F]*$', tx):
         tx = tx.encode('hex')
     return api.pushtx(tx, coin_symbol=coin_symbol, api_key=None)
+
 
 # Gets the transaction output history of an address,
 # including whether or not they have been spent
