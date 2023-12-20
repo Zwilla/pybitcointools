@@ -26,10 +26,17 @@
 
 from unicodedata import normalize
 
-from .wallet_utils import pw_encode, pw_decode, hfu, InvalidPassword
+from .wallet_utils import pw_encode, pw_decode, hfu, InvalidPassword, int_to_hex, bh2u
 from .mnemonic import *
 from .deterministic import *
 from .main import *
+
+hw_keystores = {}
+is_mpk = lambda x: is_xpub(x)
+is_private = lambda x: is_seed(x) or is_xprv(x) or is_private_key_list(x)
+is_master_key = lambda x: is_xprv(x) or is_xpub(x)
+is_private_key = lambda x: is_xprv(x) or is_private_key_list(x)
+is_bip32_key = lambda x: is_xprv(x) or is_xpub(x)
 
 
 class KeyStore(object):
@@ -241,25 +248,6 @@ class Xpub:
     def get_pubkey_from_xpub(self, xpub, sequence, bip39_prefixes):
         return bip32_derive_key(xpub, sequence, bip39_prefixes)
 
-    """needed?
-    def get_xpubkey(self, c, i):
-        s = ''.join(map(lambda x: bitcoin.int_to_hex(x,2), (c, i)))
-        return 'ff' + bh2u(b58check_to_hex(self.xpub)) + s
-
-    @classmethod
-    def parse_xpubkey(self, pubkey):
-        assert pubkey[0:2] == 'ff'
-        pk = bfh(pubkey)
-        pk = pk[1:]
-        xkey = bin_to_b58check(pk[0:78])
-        dd = pk[78:]
-        s = []
-        while dd:
-            n = int(bitcoin.rev_hex(bh2u(dd[0:2])), 16)
-            dd = dd[2:]
-            s.append(n)
-        assert len(s) == 2
-        return xkey, s
 
     def get_pubkey_derivation(self, x_pubkey):
         if x_pubkey[0:2] != 'ff':
@@ -267,7 +255,7 @@ class Xpub:
         xpub, derivation = self.parse_xpubkey(x_pubkey)
         if self.xpub != xpub:
             return
-        return derivation"""
+        return derivation
 
 
 class BIP32_KeyStore(Deterministic_KeyStore, Xpub):
@@ -373,21 +361,21 @@ class Hardware_KeyStore(KeyStore, Xpub):
         }
 
     def unpaired(self):
-        '''A device paired with the wallet was diconnected.  This can be
-        called in any thread context.'''
+        """A device paired with the wallet was diconnected.  This can be
+        called in any thread context."""
         print("unpaired")
 
     def paired(self):
-        '''A device paired with the wallet was (re-)connected.  This can be
-        called in any thread context.'''
+        """A device paired with the wallet was (re-)connected.  This can be
+        called in any thread context."""
         print("paired")
 
     def can_export(self):
         return False
 
     def is_watching_only(self):
-        '''The wallet is not watching-only; the user will be prompted for
-        pin and passphrase as appropriate when needed.'''
+        """The wallet is not watching-only; the user will be prompted for
+        pin and passphrase as appropriate when needed."""
         assert not self.has_seed()
         return False
 
@@ -493,9 +481,6 @@ def xpubkey_to_pubkey(x_pubkey, coin):
     return pubkey
 
 
-hw_keystores = {}
-
-
 def register_keystore(hw_type, constructor):
     hw_keystores[hw_type] = constructor
 
@@ -509,6 +494,7 @@ def hardware_keystore(d):
 
 
 def is_address_list(text, coin):
+    global x
     parts = text.split()
     return bool(parts) and all(coin.is_address(x) for x in parts)
 
@@ -516,25 +502,13 @@ def is_address_list(text, coin):
 def get_private_keys(privkeys):
     if not isinstance(privkeys, (list, tuple)):
         privkeys = privkeys.split('\n')
-        privkeys = map(lambda x: ''.join(x.split()), privkeys)
+        privkeys = map(lambda x_gpk: ''.join(x_gpk.split()), privkeys)
         privkeys = list(filter(bool, privkeys))
     return privkeys
 
 
 def is_private_key_list(text):
     return bool(get_private_keys(text))
-
-
-# def f(x): return 2*x
-def is_mpk(x):
-    return is_xpub(x)
-
-
-is_mpk = lambda x: is_xpub(x)
-is_private = lambda x: is_seed(x) or is_xprv(x) or is_private_key_list(x)
-is_master_key = lambda x: is_xprv(x) or is_xpub(x)
-is_private_key = lambda x: is_xprv(x) or is_private_key_list(x)
-is_bip32_key = lambda x: is_xprv(x) or is_xpub(x)
 
 
 def from_electrum_seed(seed, passphrase, is_p2sh, coin):

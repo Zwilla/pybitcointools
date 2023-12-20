@@ -65,6 +65,7 @@ def mk_stealth_metadata_script(ephem_pubkey, nonce):
 
 def mk_stealth_tx_outputs(stealth_addr, value, ephem_privkey, nonce, network='btc'):
 
+    magic_byte_addr = 0
     scan_pubkey, spend_pubkey = basic_stealth_address_to_pubkeys(stealth_addr)
 
     if network == 'btc':
